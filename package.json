@@ -10,9 +10,20 @@
     "rewrite",
     "url"
   ],
+  "homepage": "https://github.com/commenthol/proxyy#readme",
+  "bugs": {
+    "url": "https://github.com/commenthol/proxyy/issues"
+  },
   "license": "MIT",
   "author": "Commenthol <commenthol@gmail.com>",
   "main": "src",
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/commenthol/proxyy.git"
+  },
   "scripts": {
     "all": "npm run lint && npm test",
     "cover": "nyc -r lcov -r text npm test",

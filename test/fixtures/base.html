@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>HTML Page with base tag</title>
+  <!-- <base> needs to be at very top -->
+  <base href="http://proxy.my/base/">
+  <link href="./style.css" rel="stylesheet">
+</head>
+<body>
+  <hr>
+  <img src="./image.jpg" />
+  <ul>
+    <li><a href="/root">Root</a></li>
+    <li><a href="./relative">Relative</a></li>
+    <li><a href="../traverse">Traverse</a></li>
+    <li><a href="http://proxy.my/absolute">Absolute</a></li>
+  </ul>
+  <script src="/js/script.js"></script>
+</body>
+</html>
+<!--
+a comment ...
+-->

@@ -37,7 +37,8 @@ module.exports = proxy
 * @param {Array} [options.cookiePaths] - `[{String|RegExp} match, {String} replacement], [...]`
 * @param {Boolean} [options.preserveHost] - if `true` request host header is preserved
 * @param {Boolean} [option.isForwarded] - request was forwarded from other server - pass-on `x-forwarded-host` and `x-forwarded-proto` headers
-*
+* @param {Boolean} [option.noXForwardedFor] - do not set X-Forwarded-For Header
+* 
 * @example <caption>url</caption>
 * app.use(proxy('http://localhost:4000/'))
 *
@@ -53,7 +54,7 @@ function proxy (url, options) {
   if (typeof url === 'object') {
     options = url
     options.pathname = options.pathname || options.path // required by url.format
-    url = format(options)
+    url = options.url || format(options)
   }
   const _options = Object.assign({headers: {}}, DEFAULT_OPTIONS, options, parse(url))
   if (!_options.preserveHost) _options.headers.host = _options.host
@@ -71,8 +72,13 @@ function proxy (url, options) {
 
     // construct proxy url
     opts.href = [opts.protocol, '//', opts.hostname, opts.port ? `:${opts.port}` : '', trimPath(opts.path)].join('')
+    if (!req.originalUrl && req.url.indexOf(opts.baseUrl) === 0) { // legacy server ... not express
+      req.url = req.url.replace(opts.baseUrl, '')
+    }
     opts.path = joinPath(opts.path, req.url)
-    opts.headers['X-Forwarded-For'] = forwarded(req)
+    if (!opts.noXForwardedFor) {
+      opts.headers['X-Forwarded-For'] = forwarded(req)
+    }
 
     const transport = opts.protocol === HTTP ? http : https
     log('opts %o', opts)
@@ -120,3 +126,4 @@ function proxy (url, options) {
     req.pipe(cReq)
   }
 }
+

@@ -67,7 +67,7 @@ const http = require('http')
 
 http.createServer(proxy({
   baseUrl: '/api',  // if using `express` 'baseUrl' is handled via express routing
-                    // so no need to use it here
+                    // so no need to set this with `express`
   protocol: 'http:',
   host: 'proxy.my',
   port: '4000',

@@ -38,7 +38,7 @@ module.exports = proxy
 * @param {Boolean} [options.preserveHost] - if `true` request host header is preserved
 * @param {Boolean} [option.isForwarded] - request was forwarded from other server - pass-on `x-forwarded-host` and `x-forwarded-proto` headers
 * @param {Boolean} [option.noXForwardedFor] - do not set X-Forwarded-For Header
-* 
+*
 * @example <caption>url</caption>
 * app.use(proxy('http://localhost:4000/'))
 *
@@ -126,4 +126,3 @@ function proxy (url, options) {
     req.pipe(cReq)
   }
 }
-

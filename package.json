@@ -14,27 +14,27 @@
   "bugs": {
     "url": "https://github.com/commenthol/proxyy/issues"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/commenthol/proxyy.git"
+  },
   "license": "MIT",
   "author": "Commenthol <commenthol@gmail.com>",
   "main": "src",
   "directories": {
     "test": "test"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/commenthol/proxyy.git"
-  },
   "scripts": {
-    "clean": "rimraf coverage *.tgz",
     "all": "npm run lint && npm test",
+    "clean": "rimraf coverage *.tgz",
     "cover": "nyc -r lcov -r text npm test",
     "lint": "eslint --fix '**/*.js'",
     "test": "mocha"
   },
   "dependencies": {
     "debug": "^3.1.0",
-    "streamss-through": "^1.0.0",
-    "htmlparser2": "^3.9.2"
+    "htmlparser2": "^3.9.2",
+    "streamss-through": "^1.0.0"
   },
   "devDependencies": {
     "asyncc": "^2.0.1",

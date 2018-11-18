@@ -2,7 +2,7 @@ const fs = require('fs')
 const http = require('http')
 const https = require('https')
 const express = require('express')
-const {parallel} = require('asyncc')
+const { parallel } = require('asyncc')
 
 const opts = {
   cert: fs.readFileSync(`${__dirname}/../certs/star.crt`),
@@ -65,15 +65,15 @@ function server (port, cb) {
   })
 
   app.get('/proxied/home/', (req, res) => {
-    res.writeHead(200, {'Content-Type': 'text/html'})
+    res.writeHead(200, { 'Content-Type': 'text/html' })
     fs.createReadStream(`${__dirname}/../fixtures/index.html`).pipe(res)
   })
 
   // mirror
   app.use((req, res) => {
-    const {method, url, headers, body} = req
+    const { method, url, headers, body } = req
     res.setHeader('Content-Type', 'application/json')
-    res.end(JSON.stringify({method, url, headers, body}) + '\n')
+    res.end(JSON.stringify({ method, url, headers, body }) + '\n')
   })
 
   let hp

@@ -18,10 +18,10 @@ describe('proxy', function () {
     let app
     before((done) => {
       app = express()
-      app.use(proxy(`http://localhost:${PORT}/test`, {timeout: 1000}))
+      app.use(proxy(`http://localhost:${PORT}/test`, { timeout: 1000 }))
       app.use((err, req, res, next) => {
         res.statusCode = err.status || 500
-        res.json({error: err.message, code: err.code, status: res.statusCode})
+        res.json({ error: err.message, code: err.code, status: res.statusCode })
       })
       const s = http.createServer(app).listen(PROX, done)
       app.close = (cb) => {
@@ -36,8 +36,8 @@ describe('proxy', function () {
         .expect('content-type', /^application\/json/)
         .expect(res => {
           log(res.body)
-          assert.equal(res.body.url, '/test')
-          assert.equal(res.body.headers.host, 'localhost:3000')
+          assert.strictEqual(res.body.url, '/test')
+          assert.strictEqual(res.body.headers.host, 'localhost:3000')
           assert.ok(res.body.headers['x-forwarded-for'])
         })
         .expect(200, done)
@@ -50,9 +50,9 @@ describe('proxy', function () {
         .expect('content-type', /^application\/json/)
         .expect(res => {
           log(res.body)
-          assert.equal(res.body.url, '/test')
-          assert.equal(res.body.headers.host, 'localhost:3000')
-          assert.equal(res.body.body, 'test=test')
+          assert.strictEqual(res.body.url, '/test')
+          assert.strictEqual(res.body.headers.host, 'localhost:3000')
+          assert.strictEqual(res.body.body, 'test=test')
           assert.ok(res.body.headers['x-forwarded-for'])
         })
         .expect(200, done)
@@ -64,8 +64,8 @@ describe('proxy', function () {
         .expect('content-type', /^application\/json/)
         .expect(res => {
           log(res.body)
-          assert.equal(res.body.url, '/test?query=1')
-          assert.equal(res.body.headers.host, 'localhost:3000')
+          assert.strictEqual(res.body.url, '/test?query=1')
+          assert.strictEqual(res.body.headers.host, 'localhost:3000')
         })
         .expect(200, done)
     })
@@ -76,8 +76,8 @@ describe('proxy', function () {
         .expect('content-type', /^application\/json/)
         .expect(res => {
           log(res.body)
-          assert.equal(res.body.url, '/test/a/path?query=1')
-          assert.equal(res.body.headers.host, 'localhost:3000')
+          assert.strictEqual(res.body.url, '/test/a/path?query=1')
+          assert.strictEqual(res.body.headers.host, 'localhost:3000')
         })
         .expect(200, done)
     })
@@ -88,8 +88,8 @@ describe('proxy', function () {
         .expect('content-type', /^application\/json/)
         .expect(res => {
           log(res.body)
-          assert.equal(res.body.url, '/test/status/404')
-          assert.equal(res.body.headers.host, 'localhost:3000')
+          assert.strictEqual(res.body.url, '/test/status/404')
+          assert.strictEqual(res.body.headers.host, 'localhost:3000')
         })
         .expect(404, done)
     })
@@ -100,7 +100,7 @@ describe('proxy', function () {
         .expect('content-type', /^application\/json/)
         .expect(res => {
           log(res.body)
-          assert.equal(res.body.error, 'timeout')
+          assert.strictEqual(res.body.error, 'timeout')
         })
         .expect(503, done)
     })
@@ -111,8 +111,8 @@ describe('proxy', function () {
         .expect('content-type', /^application\/json/)
         .expect(res => {
           log(res.body)
-          assert.equal(res.body.error, 'socket hang up')
-          assert.equal(res.body.code, 'ECONNRESET')
+          assert.strictEqual(res.body.error, 'socket hang up')
+          assert.strictEqual(res.body.code, 'ECONNRESET')
         })
         .expect(503, done)
     })
@@ -123,9 +123,9 @@ describe('proxy', function () {
         .set('x-forwarded-host', 'server.my')
         .set('x-forwarded-proto', 'https')
         .expect(res => {
-          const {headers} = res
+          const { headers } = res
           log(headers)
-          assert.equal(headers.location, 'http://localhost:3000/status/200')
+          assert.strictEqual(headers.location, 'http://localhost:3000/status/200')
         })
         .expect(301, done)
     })
@@ -144,7 +144,7 @@ describe('proxy', function () {
       }))
       app.use((err, req, res, next) => {
         res.statusCode = err.status || 500
-        res.json({error: err.message, code: err.code, status: res.statusCode})
+        res.json({ error: err.message, code: err.code, status: res.statusCode })
       })
       const s = http.createServer(app).listen(PROX, done)
       app.close = (cb) => {
@@ -159,8 +159,8 @@ describe('proxy', function () {
         .expect('content-type', /^application\/json/)
         .expect(res => {
           log(res.body)
-          assert.equal(res.body.url, '/')
-          assert.equal(res.body.headers.host, '127.0.0.1:3000')
+          assert.strictEqual(res.body.url, '/')
+          assert.strictEqual(res.body.headers.host, '127.0.0.1:3000')
         })
         .expect(200, done)
     })
@@ -180,7 +180,7 @@ describe('proxy', function () {
       }))
       app.use((err, req, res, next) => {
         res.statusCode = err.status || 500
-        res.json({error: err.message, code: err.code, status: res.statusCode})
+        res.json({ error: err.message, code: err.code, status: res.statusCode })
       })
       const s = http.createServer(app).listen(PROX, done)
       app.close = (cb) => {
@@ -195,9 +195,9 @@ describe('proxy', function () {
         .set('x-forwarded-host', 'server.my')
         .set('x-forwarded-proto', 'https')
         .expect(res => {
-          const {headers} = res
+          const { headers } = res
           log(headers)
-          assert.equal(headers.location, 'https://server.my/status/200')
+          assert.strictEqual(headers.location, 'https://server.my/status/200')
         })
         .expect(301, done)
     })
@@ -208,9 +208,9 @@ describe('proxy', function () {
         .set('x-forwarded-host', 'server.my')
         .set('x-forwarded-proto', 'https')
         .expect(res => {
-          const {headers} = res
+          const { headers } = res
           log(headers)
-          assert.equal(headers.location, 'https://server.my/status/200')
+          assert.strictEqual(headers.location, 'https://server.my/status/200')
         })
         .expect(302, done)
     })
@@ -221,9 +221,9 @@ describe('proxy', function () {
         .set('x-forwarded-host', 'server.my')
         .set('x-forwarded-proto', 'http')
         .expect(res => {
-          const {headers} = res
+          const { headers } = res
           log(headers)
-          assert.equal(headers.location, 'http://server.my/status/200')
+          assert.strictEqual(headers.location, 'http://server.my/status/200')
         })
         .expect(303, done)
     })
@@ -243,7 +243,7 @@ describe('proxy', function () {
       }))
       app.use((err, req, res, next) => {
         res.statusCode = err.status || 500
-        res.json({error: err.message, code: err.code, status: res.statusCode})
+        res.json({ error: err.message, code: err.code, status: res.statusCode })
       })
       const s = http.createServer(app).listen(PROX, done)
       app.close = (cb) => {
@@ -255,13 +255,13 @@ describe('proxy', function () {
     it('shall preserve host', function (done) {
       request(`http://localhost:${PROX}`)
         .get('/api/bar')
-        .query({foo: 'bar'})
+        .query({ foo: 'bar' })
         .set('host', 'server.my')
         .expect(res => {
-          const {body} = res
+          const { body } = res
           log(body)
-          assert.equal(body.url, '/foo/bar?foo=bar')
-          assert.equal(body.headers.host, 'server.my')
+          assert.strictEqual(body.url, '/foo/bar?foo=bar')
+          assert.strictEqual(body.headers.host, 'server.my')
         })
         .expect(200, done)
     })
@@ -287,8 +287,8 @@ describe('proxy', function () {
         .expect('content-type', /^application\/json/)
         .expect(res => {
           log(res.body)
-          assert.equal(res.body.url, '/pathname/test?foo=bar')
-          assert.equal(res.body.headers.host, '127.0.0.1:3000')
+          assert.strictEqual(res.body.url, '/pathname/test?foo=bar')
+          assert.strictEqual(res.body.headers.host, '127.0.0.1:3000')
         })
         .expect(200, done)
     })
@@ -315,7 +315,7 @@ describe('proxy', function () {
       }))
       app.use((err, req, res, next) => {
         res.statusCode = err.status || 500
-        res.json({error: err.message, code: err.code, status: res.statusCode})
+        res.json({ error: err.message, code: err.code, status: res.statusCode })
       })
       const s = http.createServer(app).listen(PROX, done)
       app.close = (cb) => {
@@ -330,8 +330,8 @@ describe('proxy', function () {
         .expect('content-type', /^application\/json/)
         .expect(res => {
           log(res.body)
-          assert.equal(res.body.url, '/options')
-          assert.equal(res.body.headers.host, 'localhost:3443')
+          assert.strictEqual(res.body.url, '/options')
+          assert.strictEqual(res.body.headers.host, 'localhost:3443')
         })
         .expect(200, done)
     })
@@ -357,7 +357,7 @@ describe('proxy', function () {
       }))
       app.use((err, req, res, next) => {
         res.statusCode = err.status || 500
-        res.json({error: err.message, code: err.code, status: res.statusCode})
+        res.json({ error: err.message, code: err.code, status: res.statusCode })
       })
       const s = http.createServer(app).listen(PROX, done)
       app.close = (cb) => {
@@ -371,9 +371,9 @@ describe('proxy', function () {
         .get('/cookie')
         .expect('content-type', /^application\/json/)
         .expect(res => {
-          const {headers} = res
+          const { headers } = res
           log(headers)
-          assert.deepEqual(headers['set-cookie'], [
+          assert.deepStrictEqual(headers['set-cookie'], [
             'field1=1; Domain=api.server.my; Path=/foo',
             'field2=2; Path=/api',
             'dont=touch; Domain=some.other.domain; Path=/'
@@ -396,7 +396,7 @@ describe('proxy', function () {
       }))
       app.use((err, req, res, next) => {
         res.statusCode = err.status || 500
-        res.json({error: err.message, code: err.code, status: res.statusCode})
+        res.json({ error: err.message, code: err.code, status: res.statusCode })
       })
       const s = http.createServer(app).listen(PROX, done)
       app.close = (cb) => {
@@ -410,12 +410,12 @@ describe('proxy', function () {
         .get('/proxied/home/')
         .expect('content-type', /^text\/html/)
         .expect(res => {
-          const {text} = res
+          const { text } = res
           log(text)
           const expFilename = `${__dirname}/fixtures/home.exp.html`
           // fs.writeFileSync(expFilename, text)
-          const exp = fs.readFileSync(expFilename)
-          assert.equal(text, exp)
+          const exp = fs.readFileSync(expFilename, 'utf8')
+          assert.strictEqual(text, exp)
         })
         .expect(200, done)
     })

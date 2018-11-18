@@ -1,4 +1,4 @@
-const {resolve} = require('url')
+const { resolve } = require('url')
 const log = require('debug')('proxyy:utils')
 
 const SECURE = /;\s*?(Secure)/i
@@ -33,7 +33,7 @@ const REWRITE_HEADERS = ['location', 'content-location', 'destination']
 
 // @see https://tools.ietf.org/html/rfc7230
 const rewriteLocation = (req, res, opts) => {
-  const {href, baseUrl} = opts
+  const { href, baseUrl } = opts
   const proto = isSSL(req) ? 'https:' : 'http:'
   const host = getHost(req)
   // we always rewrite regardless of status code

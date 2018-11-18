@@ -2,7 +2,7 @@ const fs = require('fs')
 const assert = require('assert')
 const through = require('streamss-through')
 const htmlRewrite = require('../src/htmlRewrite')
-const {joinPath, trimPath} = require('../src/utils')
+const { joinPath, trimPath } = require('../src/utils')
 
 function testCase (opts, done) {
   // proxy url
@@ -23,7 +23,7 @@ function testCase (opts, done) {
         const expFilename = opts._fixtures.exp
         // fs.writeFileSync(expFilename, buf)
         const exp = fs.readFileSync(expFilename, 'utf8')
-        assert.equal(buf.toString(), exp)
+        assert.strictEqual(buf.toString(), exp)
         done()
       }
     ))

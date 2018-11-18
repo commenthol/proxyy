@@ -1,8 +1,8 @@
-const {parse, format} = require('url')
+const { parse, format } = require('url')
 const http = require('http')
 const https = require('https')
 const log = require('debug')('proxyy')
-const {forwarded, joinPath, trimPath, rewriteLocation, rewriteCookies} = require('./utils')
+const { forwarded, joinPath, trimPath, rewriteLocation, rewriteCookies } = require('./utils')
 const htmlRewrite = require('./htmlRewrite')
 
 const HTTP = 'http:'
@@ -56,7 +56,7 @@ function proxy (url, options) {
     options.pathname = options.pathname || options.path // required by url.format
     url = options.url || format(options)
   }
-  const _options = Object.assign({headers: {}}, DEFAULT_OPTIONS, options, parse(url))
+  const _options = Object.assign({ headers: {} }, DEFAULT_OPTIONS, options, parse(url))
   if (!_options.preserveHost) _options.headers.host = _options.host
   delete _options.pathname
 

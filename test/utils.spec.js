@@ -1,5 +1,5 @@
 const assert = require('assert')
-const {forwarded, joinPath, rewriteLocation, rewriteCookies} = require('../src/utils')
+const { forwarded, joinPath, rewriteLocation, rewriteCookies } = require('../src/utils')
 
 describe('forwarded', function () {
   const fakeReq = (ip, xForwarded) => {
@@ -14,54 +14,54 @@ describe('forwarded', function () {
 
   it('shall add remote address', function () {
     const res = forwarded(fakeReq('172.17.0.1'))
-    assert.equal(res, '172.17.0.1')
+    assert.strictEqual(res, '172.17.0.1')
   })
 
   it('shall append to existing header', function () {
     const res = forwarded(fakeReq('172.17.0.1', '2.2.2.2'))
-    assert.equal(res, '2.2.2.2, 172.17.0.1')
+    assert.strictEqual(res, '2.2.2.2, 172.17.0.1')
   })
 
   it('shall append to list', function () {
     const res = forwarded(fakeReq('172.17.0.1', '2.2.2.2, 10.0.0.1'))
-    assert.equal(res, '2.2.2.2, 10.0.0.1, 172.17.0.1')
+    assert.strictEqual(res, '2.2.2.2, 10.0.0.1, 172.17.0.1')
   })
 
   it('shall skip empty entries', function () {
     const res = forwarded(fakeReq('172.17.0.1', ',2.2.2.2,   ,,  10.0.0.1  '))
-    assert.equal(res, '2.2.2.2, 10.0.0.1, 172.17.0.1')
+    assert.strictEqual(res, '2.2.2.2, 10.0.0.1, 172.17.0.1')
   })
 })
 
 describe('joinPath', function () {
   it('shall join empty paths', function () {
-    assert.equal(joinPath('', ''), '/')
+    assert.strictEqual(joinPath('', ''), '/')
   })
   it('shall join', function () {
-    assert.equal(joinPath('', '/'), '/')
+    assert.strictEqual(joinPath('', '/'), '/')
   })
   it('shall join paths', function () {
-    assert.equal(joinPath('/api/', '/'), '/api/')
+    assert.strictEqual(joinPath('/api/', '/'), '/api/')
   })
   it('shall join paths with tailing slash', function () {
-    assert.equal(joinPath('/api', '/'), '/api')
+    assert.strictEqual(joinPath('/api', '/'), '/api')
   })
   it('shall join paths with query', function () {
-    assert.equal(joinPath('/api', '/?query'), '/api?query')
+    assert.strictEqual(joinPath('/api', '/?query'), '/api?query')
   })
   it('shall join two paths', function () {
-    assert.equal(joinPath('/api', '/path'), '/api/path')
+    assert.strictEqual(joinPath('/api', '/path'), '/api/path')
   })
   it('shall join two paths with tailing slash', function () {
-    assert.equal(joinPath('/api/', '/path/'), '/api/path/')
+    assert.strictEqual(joinPath('/api/', '/path/'), '/api/path/')
   })
   it('shall not join paths with tailing slash and query', function () {
-    assert.equal(joinPath('/api/', '/path/?query'), '/api/path/?query')
+    assert.strictEqual(joinPath('/api/', '/path/?query'), '/api/path/?query')
   })
 })
 
 describe('rewriteLocation', function () {
-  const fakeRes = (headers) => ({headers})
+  const fakeRes = (headers) => ({ headers })
   const fakeReq = (host, encrypted, forwardedHost, forwardedProto) => {
     const req = { headers: {}, connection: {} }
     if (host) req.headers.host = host
@@ -75,45 +75,45 @@ describe('rewriteLocation', function () {
     const href = 'http://proxy.my/proxied'
     const baseUrl = ''
     const req = fakeReq('server.my')
-    const res = fakeRes({location: href + '/path'})
-    rewriteLocation(req, res, {href, baseUrl})
-    assert.equal(res.headers.location, 'http://server.my/path')
+    const res = fakeRes({ location: href + '/path' })
+    rewriteLocation(req, res, { href, baseUrl })
+    assert.strictEqual(res.headers.location, 'http://server.my/path')
   })
 
   it('shall replace content-location header', function () {
     const href = 'http://proxy.my/proxied'
     const baseUrl = ''
     const req = fakeReq()
-    const res = fakeRes({'content-location': href + '/path'})
-    rewriteLocation(req, res, {href, baseUrl})
-    assert.equal(res.headers['content-location'], '/path')
+    const res = fakeRes({ 'content-location': href + '/path' })
+    rewriteLocation(req, res, { href, baseUrl })
+    assert.strictEqual(res.headers['content-location'], '/path')
   })
 
   it('shall replace location header and path', function () {
     const href = 'http://proxy.my/proxied'
     const baseUrl = '/api'
     const req = fakeReq('server.my', true)
-    const res = fakeRes({location: href + '/path'})
-    rewriteLocation(req, res, {href, baseUrl})
-    assert.equal(res.headers.location, 'https://server.my/api/path')
+    const res = fakeRes({ location: href + '/path' })
+    rewriteLocation(req, res, { href, baseUrl })
+    assert.strictEqual(res.headers.location, 'https://server.my/api/path')
   })
 
   it('shall replace location header with relative path', function () {
     const href = 'http://proxy.my/proxied'
     const baseUrl = '/api'
     const req = fakeReq('server.my', true)
-    const res = fakeRes({location: '../proxied/path'})
-    rewriteLocation(req, res, {href, baseUrl})
-    assert.equal(res.headers.location, 'https://server.my/api/path')
+    const res = fakeRes({ location: '../proxied/path' })
+    rewriteLocation(req, res, { href, baseUrl })
+    assert.strictEqual(res.headers.location, 'https://server.my/api/path')
   })
 
   it('can not replace location header if remote switches to https', function () {
     const href = 'http://proxy.my/proxied'
     const baseUrl = '/api'
     const req = fakeReq('server.my', true)
-    const res = fakeRes({location: 'https://proxy.my/proxied/path'})
-    rewriteLocation(req, res, {href, baseUrl})
-    assert.equal(res.headers.location, 'https://proxy.my/proxied/path')
+    const res = fakeRes({ location: 'https://proxy.my/proxied/path' })
+    rewriteLocation(req, res, { href, baseUrl })
+    assert.strictEqual(res.headers.location, 'https://proxy.my/proxied/path')
   })
 })
 
@@ -151,15 +151,15 @@ describe('rewriteCookies', function () {
     const req = fakeReq()
     const res = fakeRes(cookies)
     rewriteCookies(req, res, {})
-    assert.equal(res.headers['set-cookie'], cookies)
+    assert.strictEqual(res.headers['set-cookie'], cookies)
   })
 
   it('should rewrite single cookie domain', function () {
     const cookies = 'qwerty=value123; Domain=proxy.my; Path=/; Expires=Wed, 30 Aug 2019 00:00:00 GMT'
     const req = fakeReq()
     const res = fakeRes(cookies)
-    rewriteCookies(req, res, {cookieDomains: opts.cookieDomains})
-    assert.deepEqual(res.headers['set-cookie'], [
+    rewriteCookies(req, res, { cookieDomains: opts.cookieDomains })
+    assert.deepStrictEqual(res.headers['set-cookie'], [
       'qwerty=value123; Domain=server.my; Path=/; Expires=Wed, 30 Aug 2019 00:00:00 GMT'
     ])
   })
@@ -167,8 +167,8 @@ describe('rewriteCookies', function () {
   it('should rewrite cookie domains', function () {
     const req = fakeReq()
     const res = fakeRes(cookies)
-    rewriteCookies(req, res, {cookieDomains: opts.cookieDomains})
-    assert.deepEqual(res.headers['set-cookie'], [
+    rewriteCookies(req, res, { cookieDomains: opts.cookieDomains })
+    assert.deepStrictEqual(res.headers['set-cookie'], [
       'qwerty=value123; Domain=server.my; Path=/; Expires=Wed, 30 Aug 2019 00:00:00 GMT',
       'my=cookie; Domain=www.server.my; Path=/path',
       'test=456; Domain=server.my; path=/proxied/path/to',
@@ -179,8 +179,8 @@ describe('rewriteCookies', function () {
   it('should rewrite cookie paths', function () {
     const req = fakeReq()
     const res = fakeRes(cookies)
-    rewriteCookies(req, res, {cookiePaths: opts.cookiePaths})
-    assert.deepEqual(res.headers['set-cookie'], [
+    rewriteCookies(req, res, { cookiePaths: opts.cookiePaths })
+    assert.deepStrictEqual(res.headers['set-cookie'], [
       'qwerty=value123; Domain=proxy.my; Path=/api; Expires=Wed, 30 Aug 2019 00:00:00 GMT',
       'my=cookie; Domain=www.proxy.my; Path=/path',
       'test=456; Domain=localhost:3000; path=/path/to',
@@ -192,7 +192,7 @@ describe('rewriteCookies', function () {
     const req = fakeReq(true)
     const res = fakeRes(cookies)
     rewriteCookies(req, res, opts)
-    assert.deepEqual(res.headers['set-cookie'], [
+    assert.deepStrictEqual(res.headers['set-cookie'], [
       'qwerty=value123; Domain=server.my; Path=/api; Expires=Wed, 30 Aug 2019 00:00:00 GMT; Secure',
       'my=cookie; Domain=www.server.my; Path=/path; Secure',
       'test=456; Domain=server.my; path=/path/to; Secure',

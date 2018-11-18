@@ -1,5 +1,5 @@
-const {resolve} = require('url')
-const {Parser} = require('htmlparser2')
+const { resolve } = require('url')
+const { Parser } = require('htmlparser2')
 const Through = require('streamss-through')
 const log = require('debug')('proxyy:html')
 
@@ -100,7 +100,7 @@ const htmlRewrite = (opts) => {
     onend: function () {
       stream.end()
     }
-  }, {decodeEntities: true})
+  }, { decodeEntities: true })
 
   parser.pipe = function (_stream) {
     stream.pipe(_stream)

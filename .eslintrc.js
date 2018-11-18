@@ -6,6 +6,7 @@ module.exports = {
   },
   rules: {
     'strict': 'off',
-    'no-console': 'error'
+    'no-console': 'error',
+    'node/no-deprecated-api': 'warn'
   }
 }

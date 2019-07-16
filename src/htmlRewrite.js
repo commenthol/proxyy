@@ -3,7 +3,8 @@ const { Parser } = require('htmlparser2')
 const Through = require('streamss-through')
 const log = require('debug')('proxyy:html')
 
-const ELEMS_VOID = [ 'area',
+const ELEMS_VOID = [
+  'area',
   'base',
   'basefont',
   'bgsound',
@@ -25,7 +26,8 @@ const ELEMS_VOID = [ 'area',
   'param',
   'source',
   'track',
-  'wbr' ]
+  'wbr'
+]
 const ELEMS_HREF = ['a', 'area', 'base', 'link']
 const ELEMS_SRC = ['audio', 'embed', 'iframe', 'img', 'input', 'script', 'source', 'track', 'video']
 
@@ -112,4 +114,11 @@ const htmlRewrite = (opts) => {
   return parser
 }
 
-module.exports = htmlRewrite
+// check whether response needs html rewrite
+const shouldRewrite = (res) => /^(text\/html|application\/xhtml\+xml|application\/vnd\.wap\.xhtml\+xml)/
+  .test(res.headers['content-type'])
+
+module.exports = {
+  htmlRewrite,
+  shouldRewrite
+}

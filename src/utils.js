@@ -29,22 +29,40 @@ const forwarded = (req) =>
 const rewriteUrl = (url, href, base) => resolve(href, url).replace(href, base)
 
 // @see https://tools.ietf.org/html/rfc4229
-const REWRITE_HEADERS = ['location', 'content-location', 'destination']
+const REWRITE_RES_HEADERS = ['location', 'content-location', 'destination']
 
 // @see https://tools.ietf.org/html/rfc7230
 const rewriteLocation = (req, res, opts) => {
   const { href, baseUrl } = opts
-  const proto = isSSL(req) ? 'https:' : 'http:'
   const host = getHost(req)
+  // https://tools.ietf.org/html/rfc7231 allows relative urls
+  let base = baseUrl
+  if (host) {
+    const proto = isSSL(req) ? 'https:' : 'http:'
+    base = proto + '//' + host + baseUrl
+  }
   // we always rewrite regardless of status code
-  REWRITE_HEADERS.forEach((field) => {
+  REWRITE_RES_HEADERS.forEach((field) => {
     if (res.headers[field]) {
-      // https://tools.ietf.org/html/rfc7231 allows relative urls
-      let base = baseUrl
-      if (host) {
-        base = proto + '//' + host + baseUrl
-      }
       res.headers[field] = rewriteUrl(res.headers[field], href, base)
+    }
+  })
+}
+
+const REWRITE_REQ_HEADERS = ['referer']
+
+const rewriteHeaders = (req, opts) => {
+  const { baseUrl, href } = opts
+  const host = getHost(req)
+  // https://tools.ietf.org/html/rfc7231 allows relative urls
+  let base = baseUrl
+  if (host) {
+    const proto = isSSL(req) ? 'https:' : 'http:'
+    base = proto + '//' + host + baseUrl
+  }
+  REWRITE_REQ_HEADERS.forEach((field) => {
+    if (req.headers[field]) {
+      req.headers[field] = req.headers[field].replace(base, href)
     }
   })
 }
@@ -81,14 +99,14 @@ const rewriteCookies = (req, res, opts) => {
     cookies = [cookies]
   }
   res.headers['set-cookie'] = cookies.map((cookie) => {
-    let hasDomain = /Domain=/i.test(cookie) && isArray(opts.cookieDomains)
+    const hasDomain = /Domain=/i.test(cookie) && isArray(opts.cookieDomains)
     let hasDomainRewrite = false
     let hasPathRewrite = false
     log('rewriteCookies in  %s', cookie)
     if (isArray(opts.cookieDomains)) {
       cookie = cookie
         .replace(/(Domain=)([^;]*?)(;|$)/i, (m, m1, domain, m3) => {
-          for (let [match, repl] of opts.cookieDomains) {
+          for (const [match, repl] of opts.cookieDomains) {
             const _domain = matcher(domain, match, repl)
             if (_domain) {
               hasDomainRewrite = true
@@ -101,7 +119,7 @@ const rewriteCookies = (req, res, opts) => {
     if (isArray(opts.cookiePaths) && (!hasDomain || hasDomainRewrite)) {
       cookie = cookie
         .replace(/(Path=)([^;]*?)(;|$)/i, (m, m1, path, m3) => {
-          for (let [match, repl] of opts.cookiePaths) {
+          for (const [match, repl] of opts.cookiePaths) {
             const _path = matcher(path, match, repl)
             if (_path) {
               hasPathRewrite = true
@@ -129,5 +147,6 @@ module.exports = {
   joinPath,
   trimPath,
   rewriteLocation,
+  rewriteHeaders,
   rewriteCookies
 }

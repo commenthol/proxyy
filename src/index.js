@@ -10,7 +10,7 @@ const {
   rewriteCookies
 } = require('./utils')
 const { htmlRewrite, shouldRewrite } = require('./htmlRewrite')
-const { unzip, shouldUnzip } = require('./unzip')
+const { unzip, shouldUnzip, contentEncoding } = require('./unzip')
 const log = require('debug')('proxyy')
 
 const HTTP = 'http:'
@@ -123,6 +123,8 @@ function proxy (url, options) {
       rewriteLocation(req, pRes, opts)
       rewriteCookies(req, pRes, opts)
 
+      // --- header manipulation ---
+      const _contentEncoding = contentEncoding(pRes)
       const doRewrite = !opts.noHtmlRewrite && shouldRewrite(pRes)
       const doUnzip = doRewrite && shouldUnzip(pRes)
       if (doUnzip) {
@@ -130,14 +132,15 @@ function proxy (url, options) {
         delete pRes.headers['content-length']
       }
       _options.onResponse(pRes, res) // allow custom response manipulation like headers, statusCode
-
       res.writeHead(pRes.statusCode, pRes.headers)
+      res.on('error', onError)
 
+      // --- pipes ---
       let stream = pRes
 
       if (doRewrite) {
         if (doUnzip) {
-          stream = stream.pipe(unzip())
+          stream = stream.pipe(unzip({ contentEncoding: _contentEncoding }))
         }
         stream = stream.pipe(htmlRewrite(opts))
       }

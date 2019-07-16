@@ -1,6 +1,6 @@
 {
   "name": "proxyy",
-  "version": "1.0.4",
+  "version": "1.1.0-0",
   "description": "A http(s) proxy middleware",
   "keywords": [
     "cookie",
@@ -27,7 +27,7 @@
   "scripts": {
     "all": "npm run lint && npm test",
     "clean": "rimraf coverage *.tgz",
-    "cover": "nyc -r lcov -r text npm test",
+    "coverage": "nyc -r lcov -r text npm test",
     "lint": "eslint --fix '**/*.js'",
     "test": "mocha"
   },

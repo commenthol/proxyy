@@ -1,16 +1,28 @@
 const zlib = require('zlib')
 const Through = require('streamss-through')
 
-/**
- *
- */
-const unzip = () => {
-  const stream = new Through(function (data) { this.push(data) })
+// get contentEncoding header
+const contentEncoding = res => res.headers['content-encoding']
 
-  const unzipStream = zlib.createUnzip()
+/**
+ * unzip stream - supports brotli, gzip, deflate
+ */
+const unzip = ({ contentEncoding }) => {
+  const stream = new Through()
+
+  const unzipStream = contentEncoding === 'br'
+    ? zlib.createBrotliDecompress()
+    : contentEncoding === 'gzip'
+      ? zlib.createUnzip()
+      : contentEncoding === 'deflate'
+        ? zlib.createInflate()
+        : new Through()
 
   stream.on('pipe', function (src) {
     src.pipe(unzipStream)
+  })
+  stream.on('error', function (err) {
+    unzipStream.emit('error', err)
   })
 
   stream.pipe = function pipe (dest) {
@@ -43,10 +55,11 @@ const shouldUnzip = (res) => {
   }
 
   // console.log(res);
-  return /^\s*(?:deflate|gzip)\s*$/.test(res.headers['content-encoding'])
+  return /^\s*(?:deflate|gzip|br)\s*$/.test(res.headers['content-encoding'])
 }
 
 module.exports = {
   unzip,
-  shouldUnzip
+  shouldUnzip,
+  contentEncoding
 }

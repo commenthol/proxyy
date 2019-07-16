@@ -48,7 +48,7 @@ const htmlRewrite = (opts) => {
     return resolve(baseHref || url, _url).replace(proxyUrl, baseUrl)
   }
 
-  const stream = new Through(function (data) { this.push(data) })
+  const stream = new Through()
 
   const parser = new Parser({
     onopentag: function (name, attribs) {

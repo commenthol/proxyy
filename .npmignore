@@ -1,6 +1,7 @@
 node_modules/
 
 coverage/
+examples/
 docs/
 test/
 tmp/

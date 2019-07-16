@@ -395,8 +395,10 @@ describe('proxy', function () {
         timeout: 1000
       }))
       app.use((err, req, res, next) => {
-        res.statusCode = err.status || 500
-        res.json({ error: err.message, code: err.code, status: res.statusCode })
+        if (!res.headersSent) {
+          res.statusCode = err.status || 500
+          res.json({ error: err.message, code: err.code, status: res.statusCode })
+        }
       })
       const s = http.createServer(app).listen(PROX, done)
       app.close = (cb) => {
@@ -417,6 +419,65 @@ describe('proxy', function () {
           const exp = fs.readFileSync(expFilename, 'utf8')
           assert.strictEqual(text, exp)
         })
+        .expect(200, done)
+    })
+
+    it('shall proxy brotli compressed content', function (done) {
+      request(`http://localhost:${PROX}`)
+        .get('/proxied/home/br')
+        .expect('content-type', /^text\/html/)
+        .expect(res => {
+          const { text } = res
+          log(text)
+          const expFilename = `${__dirname}/fixtures/home.exp.html`
+          // fs.writeFileSync(expFilename, text)
+          const exp = fs.readFileSync(expFilename, 'utf8')
+          assert.strictEqual(text, exp)
+        })
+        .expect(200, done)
+    })
+
+    it('shall proxy gzip compressed content', function (done) {
+      request(`http://localhost:${PROX}`)
+        .get('/proxied/home/gzip')
+        .expect('content-type', /^text\/html/)
+        .expect(res => {
+          const { text } = res
+          log(text)
+          const expFilename = `${__dirname}/fixtures/home.exp.html`
+          // fs.writeFileSync(expFilename, text)
+          const exp = fs.readFileSync(expFilename, 'utf8')
+          assert.strictEqual(text, exp)
+        })
+        .expect(200, done)
+    })
+
+    it('shall proxy deflate compressed content', function (done) {
+      request(`http://localhost:${PROX}`)
+        .get('/proxied/home/deflate')
+        .expect('content-type', /^text\/html/)
+        .expect(res => {
+          const { text } = res
+          log(text)
+          const expFilename = `${__dirname}/fixtures/home.exp.html`
+          // fs.writeFileSync(expFilename, text)
+          const exp = fs.readFileSync(expFilename, 'utf8')
+          assert.strictEqual(text, exp)
+        })
+        .expect(200, done)
+    })
+
+    it('shall proxy error on bad compression', function (done) {
+      request(`http://localhost:${PROX}`)
+        .get('/proxied/encoding/error')
+        .expect('content-type', /^text\/html/)
+        .expect(200, done)
+    })
+
+    it('shall proxy error on Z_BUF_ERROR', function (done) {
+      request(`http://localhost:${PROX}`)
+        .get('/proxied/encoding/z-buf-error')
+        .expect('content-type', /^text\/html/)
         .expect(200, done)
     })
   })

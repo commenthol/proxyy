@@ -97,9 +97,11 @@ function proxy (url, options) {
     const pReq = transport.request(opts) // method, hostname, port, path, ...
     const onError = (err) => {
       err.status = 503
-      log(err)
+      log('%s', err)
       if (!res.finished) {
-        if (next) {
+        if (res.headersSent) {
+          res.end()
+        } else if (next) {
           next(err)
         } else {
           res.statusCode = err.status
@@ -133,7 +135,7 @@ function proxy (url, options) {
       }
       _options.onResponse(pRes, res) // allow custom response manipulation like headers, statusCode
       res.writeHead(pRes.statusCode, pRes.headers)
-      res.on('error', onError)
+      res.once('error', onError)
 
       // --- pipes ---
       let stream = pRes
@@ -144,7 +146,6 @@ function proxy (url, options) {
         }
         stream = stream.pipe(htmlRewrite(opts))
       }
-
       stream.pipe(res)
     })
     pReq.once('timeout', onTimeout)

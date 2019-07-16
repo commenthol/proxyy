@@ -106,9 +106,15 @@ const htmlRewrite = (opts) => {
 
   parser.pipe = function (_stream) {
     stream.pipe(_stream)
+    stream.on('error', err => {
+      _stream.emit('error', err)
+    })
   }
   parser.on('error', err => {
     parser.onerror(err)
+  })
+  parser.on('end', () => {
+    parser.onend()
   })
 
   return parser

@@ -110,7 +110,7 @@ describe('htmlRewrite', function () {
         assert.ok(!/<dont>/.test(data.toString()))
       }
     )
-    writer.on('error', (err) => {
+    writer.once('error', (err) => {
       assert.ok(err)
       done()
     })

@@ -1,5 +1,11 @@
 const assert = require('assert')
-const { forwarded, joinPath, rewriteLocation, rewriteCookies } = require('../src/utils')
+const {
+  forwarded,
+  joinPath,
+  rewriteLocation,
+  rewriteHeaders,
+  rewriteCookies
+} = require('../src/utils')
 
 describe('forwarded', function () {
   const fakeReq = (ip, xForwarded) => {
@@ -72,48 +78,90 @@ describe('rewriteLocation', function () {
   }
 
   it('shall replace location header', function () {
-    const href = 'http://proxy.my/proxied'
+    const href = 'https://server.my/path'
     const baseUrl = ''
-    const req = fakeReq('server.my')
-    const res = fakeRes({ location: href + '/path' })
+    const req = fakeReq('proxy.my')
+    const res = fakeRes({ location: href + '/doc' })
     rewriteLocation(req, res, { href, baseUrl })
-    assert.strictEqual(res.headers.location, 'http://server.my/path')
+    assert.strictEqual(res.headers.location, 'http://proxy.my/doc')
   })
 
   it('shall replace content-location header', function () {
-    const href = 'http://proxy.my/proxied'
+    const href = 'https://server.my/path'
     const baseUrl = ''
     const req = fakeReq()
-    const res = fakeRes({ 'content-location': href + '/path' })
+    const res = fakeRes({ 'content-location': href + '/doc' })
     rewriteLocation(req, res, { href, baseUrl })
-    assert.strictEqual(res.headers['content-location'], '/path')
+    assert.strictEqual(res.headers['content-location'], '/doc')
   })
 
   it('shall replace location header and path', function () {
-    const href = 'http://proxy.my/proxied'
+    const href = 'https://server.my/path'
     const baseUrl = '/api'
-    const req = fakeReq('server.my', true)
-    const res = fakeRes({ location: href + '/path' })
+    const req = fakeReq('proxy.my', true)
+    const res = fakeRes({ location: href + '/doc' })
     rewriteLocation(req, res, { href, baseUrl })
-    assert.strictEqual(res.headers.location, 'https://server.my/api/path')
+    assert.strictEqual(res.headers.location, 'https://proxy.my/api/doc')
   })
 
   it('shall replace location header with relative path', function () {
-    const href = 'http://proxy.my/proxied'
+    const href = 'http://server.my/path'
     const baseUrl = '/api'
-    const req = fakeReq('server.my', true)
-    const res = fakeRes({ location: '../proxied/path' })
+    const req = fakeReq('proxy.my', true)
+    const res = fakeRes({ location: '../path/doc' })
     rewriteLocation(req, res, { href, baseUrl })
-    assert.strictEqual(res.headers.location, 'https://server.my/api/path')
+    assert.strictEqual(res.headers.location, 'https://proxy.my/api/doc')
   })
 
   it('can not replace location header if remote switches to https', function () {
-    const href = 'http://proxy.my/proxied'
+    const href = 'http://server.my/path'
     const baseUrl = '/api'
-    const req = fakeReq('server.my', true)
-    const res = fakeRes({ location: 'https://proxy.my/proxied/path' })
+    const req = fakeReq('proxy.my', true)
+    const res = fakeRes({ location: 'https://server.my/path/doc' })
     rewriteLocation(req, res, { href, baseUrl })
-    assert.strictEqual(res.headers.location, 'https://proxy.my/proxied/path')
+    assert.strictEqual(res.headers.location, 'https://server.my/path/doc')
+  })
+})
+
+describe('rewriteHeaders', function () {
+  const fakeReq = ({ host, encrypted, forwardedHost, forwardedProto, referer }) => {
+    const req = { headers: {}, connection: {} }
+    if (host) req.headers.host = host
+    if (encrypted) req.connection.encrypted = true
+    if (forwardedHost) req.headers['x-forwarded-host'] = forwardedHost
+    if (forwardedProto) req.headers['x-forwarded-proto'] = 'https'
+    if (referer) req.headers.referer = referer
+    return req
+  }
+
+  it('shall replace referer header', function () {
+    const opts = {
+      href: 'https://server.my:8080/path',
+      baseUrl: ''
+    }
+    const req = fakeReq({ host: 'proxy.my', referer: 'http://proxy.my/doc' })
+    rewriteHeaders(req, opts)
+    assert.strictEqual(req.headers.referer, 'https://server.my:8080/path/doc')
+  })
+
+  it('shall replace referer header with baseUrl', function () {
+    const opts = {
+      href: 'https://server.my:8080/path',
+      baseUrl: '/api'
+    }
+    const req = fakeReq({ host: 'proxy.my', referer: 'http://proxy.my/api/doc' })
+    rewriteHeaders(req, opts)
+    assert.strictEqual(req.headers.referer, 'https://server.my:8080/path/doc')
+  })
+
+  it('shall replace referer header with baseUrl and subpath', function () {
+    const opts = {
+      href: 'https://server.my:8080/path',
+      baseUrl: '/api'
+    }
+    const req = fakeReq({ host: 'proxy.my', referer: 'http://proxy.my/api/doc/2' })
+    rewriteHeaders(req, opts)
+    assert.strictEqual(req.headers.referer, 'https://server.my:8080/path/doc/2')
   })
 })
 

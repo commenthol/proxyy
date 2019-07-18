@@ -1,9 +1,17 @@
 const { parse, format } = require('url')
 const http = require('http')
 const https = require('https')
+const {
+  forwarded,
+  joinPath,
+  trimPath,
+  rewriteLocation,
+  rewriteHeaders,
+  rewriteCookies
+} = require('./utils')
+const { htmlRewrite, shouldRewrite } = require('./htmlRewrite')
+const { unzip, shouldUnzip, contentEncoding } = require('./unzip')
 const log = require('debug')('proxyy')
-const { forwarded, joinPath, trimPath, rewriteLocation, rewriteCookies } = require('./utils')
-const htmlRewrite = require('./htmlRewrite')
 
 const HTTP = 'http:'
 
@@ -12,10 +20,8 @@ const DEFAULT_OPTIONS = {
   protocol: HTTP,
   timeout: 5000,
   baseUrl: '',
-  onResponse: (cRes, res) => {}
+  onResponse: (pRes, res) => {}
 }
-
-module.exports = proxy
 
 /**
 * non-transparent http(s) proxy connect middleware
@@ -38,6 +44,7 @@ module.exports = proxy
 * @param {Boolean} [options.preserveHost] - if `true` request host header is preserved
 * @param {Boolean} [option.isForwarded] - request was forwarded from other server - pass-on `x-forwarded-host` and `x-forwarded-proto` headers
 * @param {Boolean} [option.noXForwardedFor] - do not set X-Forwarded-For Header
+* @param {Boolean} [option.noHtmlRewrite] - do not rewrite html
 *
 * @example <caption>url</caption>
 * app.use(proxy('http://localhost:4000/'))
@@ -68,10 +75,15 @@ function proxy (url, options) {
       delete req.headers['x-forwarded-host']
       delete req.headers['x-forwarded-proto']
     }
+    rewriteHeaders(req, opts)
     opts.headers = Object.assign({}, req.headers, _options.headers)
 
     // construct proxy url
-    opts.href = [opts.protocol, '//', opts.hostname, opts.port ? `:${opts.port}` : '', trimPath(opts.path)].join('')
+    opts.href = [
+      opts.protocol, '//',
+      opts.hostname, opts.port ? `:${opts.port}` : '',
+      trimPath(opts.path)
+    ].join('')
     if (!req.originalUrl && req.url.indexOf(opts.baseUrl) === 0) { // legacy server ... not express
       req.url = req.url.replace(opts.baseUrl, '')
     }
@@ -81,13 +93,15 @@ function proxy (url, options) {
     }
 
     const transport = opts.protocol === HTTP ? http : https
-    log('opts %o', opts)
-    const cReq = transport.request(opts) // method, hostname, port, path, ...
+    log('request: %o', opts)
+    const pReq = transport.request(opts) // method, hostname, port, path, ...
     const onError = (err) => {
       err.status = 503
-      log(err)
+      log('%s', err)
       if (!res.finished) {
-        if (next) {
+        if (res.headersSent) {
+          res.end()
+        } else if (next) {
           next(err)
         } else {
           res.statusCode = err.status
@@ -96,33 +110,49 @@ function proxy (url, options) {
       }
     }
     const onTimeout = () => {
-      cReq.abort()
+      pReq.abort()
       onError(new Error('timeout'))
     }
     const timer = setTimeout(() => onTimeout(), opts.timeout)
 
-    cReq.on('response', (cRes) => {
+    pReq.once('response', (pRes) => {
       clearTimeout(timer)
       if (res.finished) return
 
-      res.statusCode = cRes.statusCode
-      rewriteLocation(req, cRes, opts)
-      rewriteCookies(req, cRes, opts)
-      _options.onResponse(cRes, res) // allow custom response manipulation like headers, statusCode
+      log('response: %s - %o', pRes.statusCode, pRes.headers)
 
-      res.writeHead(cRes.statusCode, cRes.headers)
-      if (
-        /^(text\/html|application\/xhtml\+xml|application\/vnd\.wap\.xhtml\+xml)/
-          .test(cRes.headers['content-type'])
-      ) {
-        cRes.pipe(htmlRewrite(opts)).pipe(res)
-      } else {
-        cRes.pipe(res)
+      res.statusCode = pRes.statusCode
+      rewriteLocation(req, pRes, opts)
+      rewriteCookies(req, pRes, opts)
+
+      // --- header manipulation ---
+      const _contentEncoding = contentEncoding(pRes)
+      const doRewrite = !opts.noHtmlRewrite && shouldRewrite(pRes)
+      const doUnzip = doRewrite && shouldUnzip(pRes)
+      if (doUnzip) {
+        delete pRes.headers['content-encoding']
+        delete pRes.headers['content-length']
       }
+      _options.onResponse(pRes, res) // allow custom response manipulation like headers, statusCode
+      res.writeHead(pRes.statusCode, pRes.headers)
+      res.once('error', onError)
+
+      // --- pipes ---
+      let stream = pRes
+
+      if (doRewrite) {
+        if (doUnzip) {
+          stream = stream.pipe(unzip({ contentEncoding: _contentEncoding }))
+        }
+        stream = stream.pipe(htmlRewrite(opts))
+      }
+      stream.pipe(res)
     })
-    cReq.on('timeout', onTimeout)
-    cReq.on('error', onError)
+    pReq.once('timeout', onTimeout)
+    pReq.on('error', onError)
     req.on('error', onError)
-    req.pipe(cReq)
+    req.pipe(pReq)
   }
 }
+
+module.exports = proxy

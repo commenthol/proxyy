@@ -13,6 +13,7 @@ Does:
 - URL rewriting in HTML pages
 - Rewrites Location headers
 - Rewrites Cookie Domains and Paths (follows [nginx.org](http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_cookie_domain) approach)
+- Rewrites Referer request headers
 
 Why another proxy middleware? Check-out:
 - [proxy-middleware](https://www.npmjs.com/package/proxy-middleware)
@@ -45,6 +46,7 @@ For all possible `options` related to http/https see
 | `[options.cookiePaths]`   | Array    | _optional:_  see example |
 | `[options.preserveHost=false]`  | Boolean  | _optional:_  if `true` request host header is preserved |
 | `[option.isForwarded=false]`    | Boolean  | _optional:_  request was forwarded from other server which set `x-forwarded-host` and `x-forwarded-proto` headers |
+| `[option.noHtmlRewrite=false]`  | Boolean  | _optional:_  Do not rewrite html/ xml responses |
 
 ### Examples
 
@@ -54,10 +56,10 @@ For all possible `options` related to http/https see
 const proxy = require('proxyy')
 const app = require('express')()
 
-app.use('/api', proxy('https://proxy.my')
+app.use('/api', proxy('https://server.my')
 app.listen(3000)
 
-//> proxies 'http://localhost:3000/api/path' to 'https://proxy.my/path'
+//> proxies 'http://localhost:3000/api/path' to 'https://server.my/path'
 ```
 
 **With options and legacy server**
@@ -66,39 +68,40 @@ app.listen(3000)
 const http = require('http')
 
 http.createServer(proxy({
-  baseUrl: '/api',  // if using `express` 'baseUrl' is handled via express routing
-                    // so no need to set this with `express`
+  baseUrl: '/proxied',  // if using `express` 'baseUrl' is handled via express routing
+                        // so no need to set this with `express`
   protocol: 'http:',
-  host: 'proxy.my',
+  host: 'server.my',
   port: '4000',
-  path: '/proxied',
+  path: '/api',
   timeout: 5000
 })).listen(3000)
 
-//> proxies 'http://localhost:3000/api/path' to 'http://proxy.my:4000/proxied/path'
+//> proxies 'http://localhost:3000/proxied/path' to 'http://server.my:4000/api/path'
 ```
 
 **Rewriting Cookies**
 
 ```js
+// proxy DNS is 'proxy.my'
 app.use('/api', proxy(
-  'https://api.proxy.my/proxy', {
+  'https://api.server.my/path', {
     cookieDomains: [
-      ['www.proxy.my', 'www.server.my'], // replace string by string
-      [/^(\w+)\.proxy.com/, '$1.server.my'] // replace using regex
+      ['www.server.my', 'www.proxy.my'], // replace string by string
+      [/^(\w+)\.server.com/, '$1.proxy.my'] // replace using regex
     ],
     cookiePaths: [
-      ['/proxy', '/'], // replace string by string
-      [/^(\w+)\/proxy(\/\w+)/, '$1$2'] // replace using regex
+      ['/path', '/'], // replace string by string
+      [/^(\w+)\/path(\/\w+)/, '$1$2'] // replace using regex
     ]
   }
 ))
 
-//> Domain=www.proxy.my;  --> Domain=www.server.my;
-//> Domain=api.proxy.com; --> Domain=api.server.my;
+//> Domain=www.server.my;  --> Domain=www.proxy.my;
+//> Domain=api.server.com; --> Domain=api.proxy.my;
 
-//> Path=/proxy;        --> Path=/;
-//> Path=/a/proxy/path; --> Path=/a/path;
+//> Path=/path;       --> Path=/;
+//> Path=/a/path/doc; --> Path=/a/doc;
 ```
 
 ## Installation

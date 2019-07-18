@@ -1,7 +1,7 @@
 const fs = require('fs')
 const assert = require('assert')
 const through = require('streamss-through')
-const htmlRewrite = require('../src/htmlRewrite')
+const { htmlRewrite } = require('../src/htmlRewrite')
 const { joinPath, trimPath } = require('../src/utils')
 
 function testCase (opts, done) {
@@ -110,7 +110,7 @@ describe('htmlRewrite', function () {
         assert.ok(!/<dont>/.test(data.toString()))
       }
     )
-    writer.on('error', (err) => {
+    writer.once('error', (err) => {
       assert.ok(err)
       done()
     })

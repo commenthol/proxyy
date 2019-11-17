@@ -8,7 +8,7 @@
 Non-transparent http(s) proxy connect middleware with the ability to rewrite location headers and cookies.
 
 Does:
-- Adds `X-Forward-For` header entry.
+- Adds `X-Forwarded-For` header entry.
 - Copes with connection errors and timeouts.
 - URL rewriting in HTML pages
 - Rewrites Location headers

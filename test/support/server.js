@@ -27,17 +27,20 @@ function server (port, cb) {
     res.statusCode = req.params.status
     let end = true
     switch (req.params.status) {
-      case '301':
+      case '301': {
         res.setHeader('Location', '/status/200')
         break
-      case '302':
+      }
+      case '302': {
         res.setHeader('Location', '../../status/200')
         break
-      case '303':
+      }
+      case '303': {
         const isSSL = req.connection.encrypted || (req.headers['x-forwarded-proto'] === 'https')
         const redir = isSSL ? 'https://' : 'http://' + req.headers.host + '/status/200'
         res.setHeader('Location', redir)
         break
+      }
       default:
         end = false
     }

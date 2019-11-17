@@ -5,7 +5,7 @@ const SECURE = /;\s*?(Secure)/i
 
 // @see https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#Common_non-standard_request_headers
 const isSSL = (req) => req.connection.encrypted || (req.headers['x-forwarded-proto'] === 'https')
-const getHost = (req) => req.headers['x-forwarded-host'] || req.headers['host']
+const getHost = (req) => req.headers['x-forwarded-host'] || req.headers.host
 
 const joinPath = (p1, p2) => {
   if (p2 === '/' || p2.indexOf('/?') === 0 || (/\/$/.test(p1) && /^\//.test(p2))) {

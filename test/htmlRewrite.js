@@ -1,6 +1,6 @@
 const fs = require('fs')
 const assert = require('assert')
-const through = require('streamss-through')
+const { through } = require('streamss-through')
 const { htmlRewrite } = require('../src/htmlRewrite')
 const { joinPath, trimPath } = require('../src/utils')
 

@@ -1,6 +1,6 @@
 const { resolve } = require('url')
 const { Parser } = require('htmlparser2')
-const Through = require('streamss-through')
+const { through } = require('streamss-through')
 const log = require('debug')('proxyy:html')
 
 const ELEMS_VOID = [
@@ -48,7 +48,7 @@ const htmlRewrite = (opts) => {
     return resolve(baseHref || url, _url).replace(proxyUrl, baseUrl)
   }
 
-  const stream = new Through()
+  const stream = through()
 
   const parser = new Parser({
     onopentag: function (name, attribs) {

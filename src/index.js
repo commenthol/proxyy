@@ -141,10 +141,7 @@ function proxy (url, options) {
       let stream = pRes
 
       if (doRewrite) {
-        if (doUnzip) {
-          stream = stream.pipe(unzip({ contentEncoding: _contentEncoding }))
-        }
-        stream = stream.pipe(htmlRewrite(opts))
+        stream = stream.pipe(unzip({ contentEncoding: _contentEncoding })).pipe(htmlRewrite(opts))
       }
       stream.pipe(res)
     })

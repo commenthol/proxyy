@@ -1,5 +1,22 @@
 const zlib = require('zlib')
-const Through = require('streamss-through')
+
+const { Transform } = require('stream')
+
+class Through extends Transform {
+  constructor (options) {
+    super(options)
+    this.on('pipe', src => {
+      src.on('error', err => {
+        this.emit('error', err)
+      })
+    })
+  }
+
+  _transform (data, encoding, callback) {
+    this.push(data)
+    callback()
+  }
+}
 
 // get contentEncoding header
 const contentEncoding = res => res.headers['content-encoding']

@@ -33,7 +33,8 @@
   },
   "dependencies": {
     "debug": "^4.1.1",
-    "htmlparser2": "^4.0.0"
+    "htmlparser2": "^4.0.0",
+    "streamss-through": "^2.0.0"
   },
   "devDependencies": {
     "asyncc": "^2.0.4",

@@ -1,5 +1,5 @@
 const { resolve } = require('url')
-const { Parser } = require('htmlparser2')
+const { WritableStream } = require('htmlparser2/lib/WritableStream')
 const Through = require('streamss-through')
 const log = require('debug')('proxyy:html')
 
@@ -50,58 +50,67 @@ const htmlRewrite = (opts) => {
 
   const stream = new Through()
 
-  const parser = new Parser({
-    onopentag: function (name, attribs) {
-      if (!isXML && name === 'html' && attribs.xmlns) isXML = true
-      const close = !isXML
-        ? '>'
-        : ELEMS_VOID.includes(name)
-          ? ' />'
-          : '>'
-      const attr = Object.keys(attribs).map(attr => {
-        let content = attribs[attr]
-        if (
-          (attr === 'src' && ELEMS_SRC.includes(name)) ||
-          (attr === 'href' && ELEMS_HREF.includes(name))
-        ) {
-          if (!baseHref && name === 'base') {
-            baseHref = resolve(url, attribs[attr])
-            log('baseHref is "%s"', baseHref)
-          }
-          content = rewriteUrl(attribs[attr])
+  function onopentag (name, attribs) {
+    if (!isXML && name === 'html' && attribs.xmlns) isXML = true
+    const close = !isXML
+      ? '>'
+      : ELEMS_VOID.includes(name)
+        ? ' />'
+        : '>'
+    const attr = Object.keys(attribs).map(attr => {
+      let content = attribs[attr]
+      if (
+        (attr === 'src' && ELEMS_SRC.includes(name)) ||
+        (attr === 'href' && ELEMS_HREF.includes(name))
+      ) {
+        if (!baseHref && name === 'base') {
+          baseHref = resolve(url, attribs[attr])
+          log('baseHref is "%s"', baseHref)
         }
-        return `${attr}="${content}"`
-      }).join(' ')
-      const str = `<${name}${attr ? ' ' : ''}${attr}${close}`
-      stream.write(str)
-    },
-    onclosetag: function (name) {
-      if (!ELEMS_VOID.includes(name)) {
-        const str = `</${name}>`
-        stream.write(str)
+        content = rewriteUrl(attribs[attr])
       }
-    },
-    ontext: function (text) {
-      stream.write(text)
-    },
-    onprocessinginstruction: function (name, data) {
-      if (!isXML && /\?xml/.test(name)) isXML = true
-      const str = `<${data}>`
+      return `${attr}="${content}"`
+    }).join(' ')
+    const str = `<${name}${attr ? ' ' : ''}${attr}${close}`
+    stream.write(str)
+  }
+  function onclosetag (name) {
+    if (!ELEMS_VOID.includes(name)) {
+      const str = `</${name}>`
       stream.write(str)
-    },
-    oncomment: function (text) {
-      const str = '<!--' + text
-      stream.write(str)
-    },
-    oncommentend: function () {
-      stream.write('-->')
-    },
-    onerror: function (err) {
-      stream.emit('error', err)
-    },
-    onend: function () {
-      stream.end()
     }
+  }
+  function ontext (text) {
+    stream.write(text)
+  }
+  function onprocessinginstruction (name, data) {
+    if (!isXML && /\?xml/.test(name)) isXML = true
+    const str = `<${data}>`
+    stream.write(str)
+  }
+  function oncomment (text) {
+    const str = '<!--' + text
+    stream.write(str)
+  }
+  function oncommentend () {
+    stream.write('-->')
+  }
+  function onerror (err) {
+    stream.emit('error', err)
+  }
+  function onend () {
+    stream.end()
+  }
+
+  const parser = new WritableStream({
+    onopentag,
+    onclosetag,
+    ontext,
+    onprocessinginstruction,
+    oncomment,
+    oncommentend,
+    onerror,
+    onend
   }, { decodeEntities: true })
 
   parser.pipe = function (_stream) {
@@ -111,10 +120,10 @@ const htmlRewrite = (opts) => {
     })
   }
   parser.on('error', err => {
-    parser.onerror(err)
+    onerror(err)
   })
   parser.on('end', () => {
-    parser.onend()
+    onend()
   })
 
   return parser

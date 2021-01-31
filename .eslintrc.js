@@ -5,8 +5,9 @@ module.exports = {
     mocha: true
   },
   rules: {
-    'strict': 'off',
+    strict: 'off',
     'no-console': 'error',
-    'node/no-deprecated-api': 'warn'
+    'node/no-deprecated-api': 'warn',
+    'node/no-path-concat': 'off'
   }
 }

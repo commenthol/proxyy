@@ -3,7 +3,7 @@
 > A http(s) proxy middleware
 
 [![NPM version](https://badge.fury.io/js/proxyy.svg)](https://www.npmjs.com/package/proxyy/)
-[![Build Status](https://secure.travis-ci.org/commenthol/proxyy.svg?branch=master)](https://travis-ci.org/commenthol/proxyy)
+[![Build Status](https://app.travis-ci.com/commenthol/proxyy.svg?branch=master)](https://app.travis-ci.com/commenthol/proxyy)
 
 Non-transparent http(s) proxy connect middleware with the ability to rewrite location headers and cookies.
 

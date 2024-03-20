@@ -1,9 +1,10 @@
 const fs = require('fs')
+const path = require('path')
 const http = require('http')
 const assert = require('assert')
 const request = require('supertest')
 const express = require('express')
-const proxy = require('..')
+const proxy = require('../src')
 const server = require('./support/server')
 const log = require('debug')('test:index')
 
@@ -311,7 +312,7 @@ describe('proxy', function () {
         path: '/options',
         timeout: 1000,
         // rejectUnauthorized: false
-        ca: fs.readFileSync(`${__dirname}/certs/root_ca.crt`)
+        ca: fs.readFileSync(path.resolve(__dirname, 'certs/root_ca.crt'))
       }))
       app.use((err, req, res, next) => {
         res.statusCode = err.status || 500
@@ -414,7 +415,7 @@ describe('proxy', function () {
         .expect(res => {
           const { text } = res
           log(text)
-          const expFilename = `${__dirname}/fixtures/home.exp.html`
+          const expFilename = path.resolve(__dirname, 'fixtures/home.exp.html')
           // fs.writeFileSync(expFilename, text)
           const exp = fs.readFileSync(expFilename, 'utf8')
           assert.strictEqual(text, exp)
@@ -429,7 +430,7 @@ describe('proxy', function () {
         .expect(res => {
           const { text } = res
           log(text)
-          const expFilename = `${__dirname}/fixtures/home.exp.html`
+          const expFilename = path.resolve(__dirname, 'fixtures/home.exp.html')
           // fs.writeFileSync(expFilename, text)
           const exp = fs.readFileSync(expFilename, 'utf8')
           assert.strictEqual(text, exp)
@@ -444,7 +445,7 @@ describe('proxy', function () {
         .expect(res => {
           const { text } = res
           log(text)
-          const expFilename = `${__dirname}/fixtures/home.exp.html`
+          const expFilename = path.resolve(__dirname, 'fixtures/home.exp.html')
           // fs.writeFileSync(expFilename, text)
           const exp = fs.readFileSync(expFilename, 'utf8')
           assert.strictEqual(text, exp)
@@ -459,7 +460,7 @@ describe('proxy', function () {
         .expect(res => {
           const { text } = res
           log(text)
-          const expFilename = `${__dirname}/fixtures/home.exp.html`
+          const expFilename = path.resolve(__dirname, 'fixtures/home.exp.html')
           // fs.writeFileSync(expFilename, text)
           const exp = fs.readFileSync(expFilename, 'utf8')
           assert.strictEqual(text, exp)

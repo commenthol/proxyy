@@ -1,4 +1,5 @@
 const fs = require('fs')
+const path = require('path')
 const http = require('http')
 const https = require('https')
 const express = require('express')
@@ -6,8 +7,8 @@ const { parallel } = require('asyncc')
 const zlib = require('zlib')
 
 const opts = {
-  cert: fs.readFileSync(`${__dirname}/../certs/star.crt`),
-  key: fs.readFileSync(`${__dirname}/../certs/star.key`)
+  cert: fs.readFileSync(path.resolve(__dirname, '../certs/star.crt')),
+  key: fs.readFileSync(path.resolve(__dirname, '../certs/star.key'))
 }
 
 function server (port, cb) {
@@ -73,7 +74,7 @@ function server (port, cb) {
       'Content-Type': 'text/html',
       'Content-Encoding': 'gzip'
     })
-    fs.createReadStream(`${__dirname}/../fixtures/index.html`)
+    fs.createReadStream(path.resolve(__dirname, '../fixtures/index.html'))
       .pipe(res)
   })
 
@@ -82,12 +83,15 @@ function server (port, cb) {
       'Content-Type': 'text/html',
       'Content-Encoding': 'gzip'
     })
-    fs.readFile(`${__dirname}/../fixtures/index.html`, (_err, buf) => {
-      zlib.gzip(buf, (_err, buf) => {
-        res.write(buf.slice(0, buf.length - 10))
-        res.end()
-      })
-    })
+    fs.readFile(
+      path.resolve(__dirname, '../fixtures/index.html'),
+      (_err, buf) => {
+        zlib.gzip(buf, (_err, buf) => {
+          res.write(buf.slice(0, buf.length - 10))
+          res.end()
+        })
+      }
+    )
   })
 
   app.get('/proxied/home/:encoding', (req, res) => {
@@ -104,14 +108,16 @@ function server (port, cb) {
       'Content-Type': 'text/html',
       'Content-Encoding': contentEncoding
     })
-    fs.createReadStream(`${__dirname}/../fixtures/index.html`)
-      .pipe(compress).pipe(res)
+    fs.createReadStream(path.resolve(__dirname, '../fixtures/index.html'))
+      .pipe(compress)
+      .pipe(res)
   })
 
   app.get('/proxied/home/', (req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/html' })
-    fs.createReadStream(`${__dirname}/../fixtures/index.html`)
-      .pipe(res)
+    fs.createReadStream(path.resolve(__dirname, '../fixtures/index.html')).pipe(
+      res
+    )
   })
 
   // mirror

@@ -2,8 +2,8 @@
 
 > A http(s) proxy middleware
 
-[![NPM version](https://badge.fury.io/js/proxyy.svg)](https://www.npmjs.com/package/proxyy/)
-[![Build Status](https://app.travis-ci.com/commenthol/proxyy.svg?branch=master)](https://app.travis-ci.com/commenthol/proxyy)
+[![npm-badge][npm-badge]][npm]
+[![actions-badge][actions-badge]][actions]
 
 Non-transparent http(s) proxy connect middleware with the ability to rewrite location headers and cookies.
 
@@ -120,6 +120,11 @@ $ npm test
 
 ## License
 
-[MIT Licensed](./LICENSE.md)
+[MIT Licensed](./LICENSE)
 
 [url.parse]: https://nodejs.org/api/url.html#url_url_parse_urlstring_parsequerystring_slashesdenotehost
+[npm-badge]: https://badgen.net/npm/v/proxyy
+[npm]: https://www.npmjs.com/package/proxyy
+[actions-badge]: https://github.com/commenthol/proxyy/workflows/CI/badge.svg?branch=master&event=push
+[actions]: https://github.com/commenthol/proxyy/actions/workflows/ci.yml?query=branch%3Amaster
+

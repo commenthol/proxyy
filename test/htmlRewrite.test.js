@@ -1,4 +1,5 @@
 const fs = require('fs')
+const path = require('path')
 const assert = require('assert')
 const { through } = require('streamss-through')
 const { htmlRewrite } = require('../src/htmlRewrite')
@@ -6,27 +7,36 @@ const { joinPath, trimPath } = require('../src/utils')
 
 function testCase (opts, done) {
   // proxy url
-  opts.href = [opts.protocol, '//', opts.hostname, opts.port ? `:${opts.port}` : '', trimPath(opts.path)].join('')
+  opts.href = [
+    opts.protocol,
+    '//',
+    opts.hostname,
+    opts.port ? `:${opts.port}` : '',
+    trimPath(opts.path)
+  ].join('')
   // proxied client url
   opts.path = joinPath(opts.path, '/home/')
 
   const buffer = []
 
   fs.createReadStream(opts._fixtures.in)
-    .pipe(htmlRewrite(opts)).pipe(through(
-      (data) => {
-        buffer.push(data)
-        // process.stdout.write(data)
-      },
-      () => {
-        const buf = Buffer.concat(buffer)
-        const expFilename = opts._fixtures.exp
-        // fs.writeFileSync(expFilename, buf)
-        const exp = fs.readFileSync(expFilename, 'utf8')
-        assert.strictEqual(buf.toString(), exp)
-        done()
-      }
-    ))
+    .pipe(htmlRewrite(opts))
+    .pipe(
+      through(
+        (data) => {
+          buffer.push(data)
+          // process.stdout.write(data)
+        },
+        () => {
+          const buf = Buffer.concat(buffer)
+          const expFilename = opts._fixtures.exp
+          // fs.writeFileSync(expFilename, buf)
+          const exp = fs.readFileSync(expFilename, 'utf8')
+          assert.strictEqual(buf.toString(), exp)
+          done()
+        }
+      )
+    )
 }
 
 describe('htmlRewrite', function () {
@@ -39,8 +49,8 @@ describe('htmlRewrite', function () {
       path: '/',
       baseUrl: '/proxy',
       _fixtures: {
-        in: `${__dirname}/fixtures/${file}.html`,
-        exp: `${__dirname}/fixtures/${file}.exp.html`
+        in: path.resolve(__dirname, 'fixtures', `${file}.html`),
+        exp: path.resolve(__dirname, 'fixtures', `${file}.exp.html`)
       }
     }
     testCase(opts, done)
@@ -55,8 +65,8 @@ describe('htmlRewrite', function () {
       path: '/',
       baseUrl: '/proxy',
       _fixtures: {
-        in: `${__dirname}/fixtures/${file}.html`,
-        exp: `${__dirname}/fixtures/${file}.exp.html`
+        in: path.resolve(__dirname, 'fixtures', `${file}.html`),
+        exp: path.resolve(__dirname, 'fixtures', `${file}.exp.html`)
       }
     }
     testCase(opts, done)
@@ -71,8 +81,8 @@ describe('htmlRewrite', function () {
       path: '/',
       baseUrl: '/proxy',
       _fixtures: {
-        in: `${__dirname}/fixtures/${file}.xhtml`,
-        exp: `${__dirname}/fixtures/${file}.exp.xhtml`
+        in: path.resolve(__dirname, 'fixtures', `${file}.xhtml`),
+        exp: path.resolve(__dirname, 'fixtures', `${file}.exp.xhtml`)
       }
     }
     testCase(opts, done)
@@ -87,8 +97,8 @@ describe('htmlRewrite', function () {
       path: '/',
       baseUrl: '/proxy',
       _fixtures: {
-        in: `${__dirname}/fixtures/${file}.xhtml`,
-        exp: `${__dirname}/fixtures/${file}.exp.xhtml`
+        in: path.resolve(__dirname, 'fixtures', `${file}.xhtml`),
+        exp: path.resolve(__dirname, 'fixtures', `${file}.exp.xhtml`)
       }
     }
     testCase(opts, done)
@@ -104,12 +114,10 @@ describe('htmlRewrite', function () {
     }
     const reader = through()
     const html = htmlRewrite(opts)
-    const writer = through(
-      function (data) {
-        // console.log('data %s', data)
-        assert.ok(!/<dont>/.test(data.toString()))
-      }
-    )
+    const writer = through(function (data) {
+      // console.log('data %s', data)
+      assert.ok(!/<dont>/.test(data.toString()))
+    })
     writer.once('error', (err) => {
       assert.ok(err)
       done()

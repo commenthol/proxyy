@@ -27,28 +27,28 @@
   "scripts": {
     "all": "npm run lint && npm test",
     "clean": "rimraf coverage *.tgz",
-    "coverage": "nyc -r lcov -r text npm test",
+    "coverage": "c8 -r lcov -r text npm test",
     "lint": "eslint --ext .js .",
     "test": "mocha"
   },
   "dependencies": {
-    "debug": "^4.3.2",
-    "htmlparser2": "^7.1.2",
-    "streamss-through": "^2.0.0"
+    "debug": "^4.3.4",
+    "htmlparser2": "^9.1.0",
+    "streamss-through": "^2.0.1"
   },
   "devDependencies": {
     "asyncc": "^2.0.6",
+    "c8": "^9.1.0",
     "eslint": "^8.57.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-promise": "^6.1.1",
-    "express": "^4.17.1",
-    "mocha": "^9.1.1",
-    "nyc": "^15.1.0",
-    "supertest": "^6.1.6"
+    "express": "^4.19.0",
+    "mocha": "^10.3.0",
+    "supertest": "^6.3.4"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=18.0.0"
   }
 }
